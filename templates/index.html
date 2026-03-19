@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #e94560;
+        }
+
+        p.subtitle {
+            color: #a8b2d8;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .upload-box {
+            background: rgba(255,255,255,0.05);
+            border: 2px dashed #e94560;
+            border-radius: 20px;
+            padding: 50px 40px;
+            width: 480px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-box:hover {
+            background: rgba(233,69,96,0.1);
+            transform: translateY(-3px);
+        }
+
+        .upload-icon { font-size: 3rem; margin-bottom: 15px; }
+
+        .upload-box h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: #ccd6f6;
+        }
+
+        .upload-box p {
+            color: #8892b0;
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+        }
+
+        input[type="file"] { display: none; }
+
+        .btn {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 8px;
+        }
+
+        .btn:hover { background: #c73652; transform: translateY(-2px); }
+        .btn.secondary { background: transparent; border: 2px solid #e94560; }
+        .btn.secondary:hover { background: #e94560; }
+
+        #file-name {
+            margin-top: 15px;
+            color: #64ffda;
+            font-size: 0.9rem;
+            min-height: 20px;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 20px;
+            color: #a8b2d8;
+        }
+
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid #e94560;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .features {
+            display: flex;
+            gap: 20px;
+            margin-top: 40px;
+            justify-content: center;
+        }
+
+        .feature {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            width: 140px;
+            font-size: 0.85rem;
+            color: #a8b2d8;
+        }
+
+        .feature-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>💰 Finance Dashboard</h1>
+    <p class="subtitle">Upload your bank statement and get instant spending insights</p>
+
+    <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">📂</div>
+        <h3>Drop your CSV file here</h3>
+        <p>or click to browse</p>
+        <input type="file" id="fileInput" accept=".csv" onchange="handleFile(this)">
+        <div id="file-name">No file selected</div>
+    </div>
+
+    <br>
+    <button class="btn" onclick="analyzeFile()">🔍 Analyze My Spending</button>
+    <button class="btn secondary" onclick="useSample()">📄 Use Sample Data</button>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Analyzing your transactions...</p>
+    </div>
+
+    <div class="features">
+        <div class="feature">
+            <div class="feature-icon">🤖</div>
+            ML Powered Categories
+        </div>
+        <div class="feature">
+            <div class="feature-icon">📊</div>
+            Visual Charts
+        </div>
+        <div class="feature">
+            <div class="feature-icon">💡</div>
+            Smart Money Tips
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedFile = null;
+
+    function handleFile(input) {
+        selectedFile = input.files[0];
+        document.getElementById('file-name').textContent = '✅ ' + selectedFile.name;
+    }
+
+    function analyzeFile() {
+        if (!selectedFile) {
+            alert('Please select a CSV file first!');
+            return;
+        }
+
+        document.getElementById('loading').style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        fetch('/analyze', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('loading').style.display = 'none';
+            localStorage.setItem('analysisResult', JSON.stringify(data));
+            window.location.href = '/dashboard';
+        })
+        .catch(err => {
+            document.getElementById('loading').style.display = 'none';
+            alert('Error analyzing file. Please try again.');
+        });
+    }
+
+    function useSample() {
+        fetch('/sample')
+        .then(res => res.json())
+        .then(data => {
+            localStorage.setItem('analysisResult', JSON.stringify(data));
+            window.location.href = '/dashboard';
+        });
+    }
+</script>
+</body>
+</html>
+
+

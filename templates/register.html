@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — Finance Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .card {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 45px 40px;
+            width: 420px;
+            text-align: center;
+        }
+        .logo { font-size: 2.5rem; margin-bottom: 10px; }
+        h2 { color: #e94560; margin-bottom: 5px; font-size: 1.6rem; }
+        .subtitle { color: #a8b2d8; font-size: 0.9rem; margin-bottom: 30px; }
+        .input-group { margin-bottom: 18px; text-align: left; }
+        label { font-size: 0.85rem; color: #a8b2d8; margin-bottom: 6px; display: block; }
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border 0.3s;
+        }
+        input:focus { border-color: #e94560; }
+        .btn {
+            width: 100%;
+            padding: 13px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.3s;
+        }
+        .btn:hover { background: #c73652; }
+        .error {
+            background: rgba(233,69,96,0.15);
+            border: 1px solid #e94560;
+            color: #e94560;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+        .link { margin-top: 20px; color: #a8b2d8; font-size: 0.9rem; }
+        .link a { color: #64ffda; text-decoration: none; }
+        .link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="logo">💰</div>
+    <h2>Create Account</h2>
+    <p class="subtitle">Join Finance Dashboard today</p>
+
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+        <div class="input-group">
+            <label>Username</label>
+            <input type="text" name="username" placeholder="Choose a username" required>
+        </div>
+        <div class="input-group">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="Enter your email" required>
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" name="password" placeholder="Choose a password" required>
+        </div>
+        <button type="button" class="btn" id="registerBtn" onclick="animateRegister(this)">
+    <span id="registerIcon">🚀</span> Create Account
+</button>
+    </form>
+
+    <div class="link">
+        Already have an account? <a href="/login">Login here</a>
+    </div>
+</div>
+<script>
+function animateRegister(btn) {
+    const icon = document.getElementById('registerIcon');
+    const sequence = ['🚀','🌤️','🌥️','☁️','⭐','🌟','✅'];
+    let i = 0;
+    btn.disabled = true;
+    btn.style.background = '#c73652';
+
+    // Shake animation first
+    btn.style.animation = 'shake 0.3s ease';
+
+    const interval = setInterval(() => {
+        icon.style.transform = 'scale(1.5) translateY(-2px)';
+        icon.style.transition = 'transform 0.15s';
+        setTimeout(() => icon.style.transform = 'scale(1) translateY(0)', 150);
+        icon.textContent = sequence[i];
+        i++;
+        if (i >= sequence.length) {
+            clearInterval(interval);
+            btn.textContent = '✅ Account Created!';
+            btn.style.background = '#00b894';
+            document.querySelector('form').submit()
+        }
+    }, 250);
+}
+
+// Add shake keyframe
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>

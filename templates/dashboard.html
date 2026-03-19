@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Dashboard - Results</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            color: white;
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            color: #e94560;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #a8b2d8;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            background: transparent;
+            border: 2px solid #e94560;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover { background: #e94560; }
+
+        .summary-cards {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.07);
+            border-radius: 16px;
+            padding: 25px 35px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            min-width: 180px;
+        }
+
+        .card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #e94560;
+        }
+
+        .card .label {
+            color: #a8b2d8;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+            max-width: 1000px;
+            margin: 0 auto 30px;
+        }
+
+        .chart-box {
+            background: rgba(255,255,255,0.07);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .chart-box h3 {
+            margin-bottom: 15px;
+            color: #ccd6f6;
+            font-size: 1rem;
+        }
+
+        .tips-section {
+            max-width: 1000px;
+            margin: 25px auto 0;
+            background: rgba(255,255,255,0.07);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tips-section h3 {
+            color: #64ffda;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .tip {
+            background: rgba(100,255,218,0.07);
+            border-left: 4px solid #64ffda;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            color: #ccd6f6;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+<a href="/" class="back-btn">← Upload New File</a>
+
+<h1>💰 Your Spending Report</h1>
+<p class="subtitle">AI-powered analysis of your transactions</p>
+
+<div class="summary-cards">
+    <div class="card">
+        <div class="value" id="total-transactions">-</div>
+        <div class="label">Total Transactions</div>
+    </div>
+    <div class="card">
+        <div class="value" id="total-categories">-</div>
+        <div class="label">Categories Found</div>
+    </div>
+    <div class="card">
+        <div class="value" id="top-category">-</div>
+        <div class="label">Top Spending Area</div>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="chart-box">
+        <h3>📊 Spending by Category (Count)</h3>
+        <canvas id="pieChart"></canvas>
+    </div>
+    <div class="chart-box">
+        <h3>💵 Amount Spent by Category</h3>
+        <canvas id="barChart"></canvas>
+    </div>
+</div>
+
+<div class="tips-section">
+    <h3>💡 Smart Money Tips</h3>
+    <div id="tips-container"></div>
+</div>
+
+<script>
+    const data = JSON.parse(localStorage.getItem('analysisResult'));
+
+    if (!data) {
+        window.location.href = '/';
+    }
+
+    // Fill summary cards
+    document.getElementById('total-transactions').textContent = data.total_transactions;
+    document.getElementById('total-categories').textContent = Object.keys(data.category_counts).length;
+
+    const topCat = Object.entries(data.category_counts).sort((a,b) => b[1]-a[1])[0];
+    document.getElementById('top-category').textContent = topCat ? topCat[0] : '-';
+
+    // Colors
+    const colors = ['#e94560','#64ffda','#f7c59f','#a8b2d8','#6c63ff','#ff6b6b'];
+
+    // Pie Chart
+    const pieCtx = document.getElementById('pieChart').getContext('2d');
+    new Chart(pieCtx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(data.category_counts),
+            datasets: [{
+                data: Object.values(data.category_counts),
+                backgroundColor: colors,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { labels: { color: '#ccd6f6', font: { size: 12 } } }
+            }
+        }
+    });
+
+    // Bar Chart
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    new Chart(barCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(data.category_totals),
+            datasets: [{
+                label: 'Amount (₹)',
+                data: Object.values(data.category_totals),
+                backgroundColor: colors,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { labels: { color: '#ccd6f6' } }
+            },
+            scales: {
+    x: { ticks: { color: '#a8b2d8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+    y: {
+        ticks: {
+            color: '#a8b2d8',
+            callback: function(value) {
+                if (value >= 1e9) return '₹' + (value/1e9).toFixed(1) + 'B';
+                if (value >= 1e6) return '₹' + (value/1e6).toFixed(1) + 'M';
+                if (value >= 1e3) return '₹' + (value/1e3).toFixed(1) + 'K';
+                return '₹' + value;
+            }
+        },
+        grid: { color: 'rgba(255,255,255,0.05)' }
+    }
+}
+        }
+    });
+
+    // Tips
+    const tipsContainer = document.getElementById('tips-container');
+    data.tips.forEach(tip => {
+        const div = document.createElement('div');
+        div.className = 'tip';
+        div.textContent = tip;
+        tipsContainer.appendChild(div);
+    });
+</script>
+</body>
+</html>
